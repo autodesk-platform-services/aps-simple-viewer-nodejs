@@ -1,0 +1,48 @@
+@font-face {
+    font-family: 'ArtifaktElement';
+    src: url('https://fonts.autodesk.com/ArtifaktElement/EOT/Artifakt%20Element%20Hair.eot');
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    font-family: ArtifaktElement;
+}
+
+#header {
+    position: absolute;
+    width: 100%;
+    height: 3em;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#header > * {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    font-family: ArtifaktElement;
+    font-size: 1em;
+}
+
+#header .logo, #models, #upload {
+    height: 2em;
+}
+
+#header .title {
+    flex: 1 0 auto;
+}
+
+#models {
+    min-width: 0;
+    flex: 0 1 auto;
+}
+
+#preview {
+    position: absolute;
+    width: 100%;
+    height: calc(100% - 3em);
+    top: 3em;
+}
