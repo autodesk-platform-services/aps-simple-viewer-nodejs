@@ -1,4 +1,3 @@
-const fs = require('fs');
 const express = require('express');
 const formidable = require('express-formidable');
 const { listModels, uploadModel } = require('../services/forge.js');
@@ -20,7 +19,7 @@ router.post('/', formidable(), async function (req, res, next) {
         return;
     }
     try {
-        await uploadModel(file.name, fs.readFileSync(file.path), req.fields['model-zip-entrypoint']);
+        await uploadModel(file.name, file.path, req.fields['model-zip-entrypoint']);
         res.status(200).end();
     } catch (err) {
         next(err);

@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { AuthClientTwoLegged, BucketsApi, ObjectsApi, DerivativesApi } = require('forge-apis');
 
 const { FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, FORGE_BUCKET } = process.env;
@@ -22,7 +23,6 @@ async function _getAccessToken(scopes) {
     }
     return {
         access_token: token.access_token,
-        // token_type: token.token_type,
         expires_in: Math.round((token.expires_at - Date.now()) / 1000)
     };
 }
@@ -31,11 +31,25 @@ function _urnify(id) {
     return Buffer.from(id).toString('base64').replace(/=/g, '');
 }
 
+async function _ensureBucketExists() {
+    const token = await _getAccessToken(INTERNAL_TOKEN_SCOPES);
+    try {
+        await new BucketsApi().getBucketDetails(BUCKET, null, token);
+    } catch (err) {
+        if (err.statusCode === 404) {
+            await new BucketsApi().createBucket({ bucketKey: BUCKET, policyKey: 'temporary' }, {}, null, token);
+        } else {
+            throw err;
+        }
+    }
+}
+
 async function getPublicToken() {
     return _getAccessToken(PUBLIC_TOKEN_SCOPES);
 }
 
 async function listModels() {
+    await _ensureBucketExists(); // Remove this if we can assume the bucket to exist
     const token = await _getAccessToken(INTERNAL_TOKEN_SCOPES);
     let response = await new ObjectsApi().getObjects(BUCKET, { limit: 64 }, null, token);
     let objects = response.body.items;
@@ -50,21 +64,10 @@ async function listModels() {
     }));
 }
 
-async function ensureBucketExists() {
+async function uploadModel(objectName, filePath, rootFilename) {
+    await _ensureBucketExists(); // Remove this if we can assume the bucket to exist
     const token = await _getAccessToken(INTERNAL_TOKEN_SCOPES);
-    try {
-        await new BucketsApi().getBucketDetails(BUCKET, null, token);
-    } catch (err) {
-        if (err.statusCode === 404) {
-            await new BucketsApi().createBucket({ bucketKey: BUCKET, policyKey: 'temporary' }, {}, null, token);
-        } else {
-            throw err;
-        }
-    }
-}
-
-async function uploadModel(objectName, buffer, rootFilename) {
-    const token = await _getAccessToken(INTERNAL_TOKEN_SCOPES);
+    const buffer = fs.readFileSync(filePath);
     const response = await new ObjectsApi().uploadObject(BUCKET, objectName, buffer.byteLength, buffer, {}, null, token);
     const job = {
         input: {
@@ -84,6 +87,5 @@ async function uploadModel(objectName, buffer, rootFilename) {
 module.exports = {
     getPublicToken,
     listModels,
-    ensureBucketExists,
     uploadModel
 };

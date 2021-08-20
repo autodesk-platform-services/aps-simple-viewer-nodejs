@@ -8,5 +8,5 @@ app.use('/api/models', require('./routes/models.js'));
 app.use(function (err, req, res) {
     console.error(err);
     res.status(500).send(err.message);
-})
-app.listen(PORT, () => console.log(`Server listening on port ${PORT}...`));
+});
+app.listen(PORT, function () { console.log(`Server listening on port ${PORT}...`); });
