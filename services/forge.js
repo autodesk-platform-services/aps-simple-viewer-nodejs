@@ -10,29 +10,27 @@ const BUCKET = FORGE_BUCKET || `${FORGE_CLIENT_ID.toLowerCase()}-basic-app`;
 const INTERNAL_TOKEN_SCOPES = ['bucket:read', 'bucket:create', 'data:read', 'data:write', 'data:create'];
 const PUBLIC_TOKEN_SCOPES = ['viewables:read'];
 
-let _tokenCache = new Map();
+let internalAuthClient = new AuthClientTwoLegged(FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, INTERNAL_TOKEN_SCOPES, true);
+let publicAuthClient = new AuthClientTwoLegged(FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, PUBLIC_TOKEN_SCOPES, true);
 
-async function _getAccessToken(scopes) {
-    const key = scopes.join(',');
-    let token = _tokenCache.get(key);
-    if (!token || token.expires_at < Date.now()) {
-        const client = new AuthClientTwoLegged(FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, scopes);
-        token = await client.authenticate();
-        token.expires_at = Date.now() + token.expires_in * 1000;
-        _tokenCache.set(key, token);
+const urnify = (id) => Buffer.from(id).toString('base64').replace(/=/g, '');
+
+async function getInternalToken() {
+    if (!internalAuthClient.isAuthorized()) {
+        await internalAuthClient.authenticate();
     }
-    return {
-        access_token: token.access_token,
-        expires_in: Math.round((token.expires_at - Date.now()) / 1000)
-    };
+    return internalAuthClient.getCredentials();
 }
 
-function _urnify(id) {
-    return Buffer.from(id).toString('base64').replace(/=/g, '');
+async function getPublicToken() {
+    if (!publicAuthClient.isAuthorized()) {
+        await publicAuthClient.authenticate();
+    }
+    return publicAuthClient.getCredentials();
 }
 
-async function _ensureBucketExists() {
-    const token = await _getAccessToken(INTERNAL_TOKEN_SCOPES);
+async function ensureBucketExists() {
+    const token = await getInternalToken();
     try {
         await new BucketsApi().getBucketDetails(BUCKET, null, token);
     } catch (err) {
@@ -44,13 +42,9 @@ async function _ensureBucketExists() {
     }
 }
 
-async function getPublicToken() {
-    return _getAccessToken(PUBLIC_TOKEN_SCOPES);
-}
-
 async function listModels() {
-    await _ensureBucketExists(); // Remove this if we can assume the bucket to exist
-    const token = await _getAccessToken(INTERNAL_TOKEN_SCOPES);
+    await ensureBucketExists(); // Remove this if we can assume the bucket to exist
+    const token = await getInternalToken();
     let response = await new ObjectsApi().getObjects(BUCKET, { limit: 64 }, null, token);
     let objects = response.body.items;
     while (response.body.next) {
@@ -60,18 +54,18 @@ async function listModels() {
     }
     return objects.map(obj => ({
         name: obj.objectKey,
-        urn: _urnify(obj.objectId)
+        urn: urnify(obj.objectId)
     }));
 }
 
 async function uploadModel(objectName, filePath, rootFilename) {
-    await _ensureBucketExists(); // Remove this if we can assume the bucket to exist
-    const token = await _getAccessToken(INTERNAL_TOKEN_SCOPES);
+    await ensureBucketExists(); // Remove this if we can assume the bucket to exist
+    const token = await getInternalToken();
     const buffer = fs.readFileSync(filePath);
     const response = await new ObjectsApi().uploadObject(BUCKET, objectName, buffer.byteLength, buffer, {}, null, token);
     const job = {
         input: {
-            urn: _urnify(response.body.objectId)
+            urn: urnify(response.body.objectId)
         },
         output: {
             formats: [{ type: 'svf', views: ['2d', '3d'] }]
