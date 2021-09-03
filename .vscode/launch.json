@@ -9,8 +9,13 @@
             "request": "launch",
             "name": "Launch Server",
             "runtimeExecutable": "npm",
-            "runtimeArgs": ["start"],
-            "envFile": "${workspaceFolder}/.env"
+            "runtimeArgs": [
+                "start"
+            ],
+            "envFile": "${workspaceFolder}/.env",
+            "skipFiles": [
+                "<node_internals>/**/*.js"
+            ]
         }
     ]
 }
