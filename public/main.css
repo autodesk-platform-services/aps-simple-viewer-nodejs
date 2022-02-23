@@ -2,9 +2,10 @@ body, html {
     margin: 0;
     padding: 0;
     height: 100vh;
+    font-family: ArtifaktElement; /* Will be added by Forge Viewer */
 }
 
-#header, #preview {
+#header, #preview, #overlay {
     position: absolute;
     width: 100%;
 }
@@ -17,16 +18,30 @@ body, html {
     align-items: center;
 }
 
-#preview {
+#preview, #overlay {
     top: 3em;
     bottom: 0;
+}
+
+#overlay {
+    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 1em;
+    display: none;
+}
+
+#overlay > .notification {
+    margin: auto;
+    padding: 1em;
+    max-width: 50%;
+    background: white;
 }
 
 #header > * {
     height: 2em;
     margin: 0 0.5em;
-    font-family: ArtifaktElement; /* Will be added by Forge Viewer */
     font-size: 1em;
+    font-family: ArtifaktElement;
 }
 
 #header .title {

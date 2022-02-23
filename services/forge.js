@@ -1,19 +1,9 @@
 const fs = require('fs');
 const { AuthClientTwoLegged, BucketsApi, ObjectsApi, DerivativesApi } = require('forge-apis');
+const { FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, FORGE_BUCKET } = require('../config.js');
 
-const { FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, FORGE_BUCKET } = process.env;
-if (!FORGE_CLIENT_ID || !FORGE_CLIENT_SECRET) {
-    console.warn('Missing some of the environment variables.');
-    process.exit(1);
-}
-const BUCKET = FORGE_BUCKET || `${FORGE_CLIENT_ID.toLowerCase()}-basic-app`;
-const INTERNAL_TOKEN_SCOPES = ['bucket:read', 'bucket:create', 'data:read', 'data:write', 'data:create'];
-const PUBLIC_TOKEN_SCOPES = ['viewables:read'];
-
-let internalAuthClient = new AuthClientTwoLegged(FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, INTERNAL_TOKEN_SCOPES, true);
-let publicAuthClient = new AuthClientTwoLegged(FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, PUBLIC_TOKEN_SCOPES, true);
-
-const urnify = (id) => Buffer.from(id).toString('base64').replace(/=/g, '');
+let internalAuthClient = new AuthClientTwoLegged(FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, ['bucket:read', 'bucket:create', 'data:read', 'data:write', 'data:create'], true);
+let publicAuthClient = new AuthClientTwoLegged(FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, ['viewables:read'], true);
 
 async function getInternalToken() {
     if (!internalAuthClient.isAuthorized()) {
@@ -29,57 +19,72 @@ async function getPublicToken() {
     return publicAuthClient.getCredentials();
 }
 
-async function ensureBucketExists() {
-    const token = await getInternalToken();
+async function ensureBucketExists(bucketKey) {
     try {
-        await new BucketsApi().getBucketDetails(BUCKET, null, token);
+        await new BucketsApi().getBucketDetails(bucketKey, null, await getInternalToken());
     } catch (err) {
         if (err.statusCode === 404) {
-            await new BucketsApi().createBucket({ bucketKey: BUCKET, policyKey: 'temporary' }, {}, null, token);
+            await new BucketsApi().createBucket({ bucketKey, policyKey: 'temporary' }, {}, null, await getInternalToken());
         } else {
             throw err;
         }
     }
 }
 
-async function listModels() {
-    await ensureBucketExists(); // Remove this if we can assume the bucket to exist
-    const token = await getInternalToken();
-    let response = await new ObjectsApi().getObjects(BUCKET, { limit: 64 }, null, token);
-    let objects = response.body.items;
-    while (response.body.next) {
-        const startAt = new URL(response.body.next).searchParams.get('startAt');
-        response = await new ObjectsApi().getObjects(BUCKET, { limit: 64, startAt }, null, token);
-        objects = objects.concat(response.body.items);
+async function listObjects() {
+    await ensureBucketExists(FORGE_BUCKET);
+    let resp = await new ObjectsApi().getObjects(FORGE_BUCKET, { limit: 64 }, null, await getInternalToken());
+    let objects = resp.body.items;
+    while (resp.body.next) {
+        const startAt = new URL(resp.body.next).searchParams.get('startAt');
+        resp = await new ObjectsApi().getObjects(FORGE_BUCKET, { limit: 64, startAt }, null, await getInternalToken());
+        objects = objects.concat(resp.body.items);
     }
-    return objects.map(obj => ({
-        name: obj.objectKey,
-        urn: urnify(obj.objectId)
-    }));
+    return objects;
 }
 
-async function uploadModel(objectName, filePath, rootFilename) {
-    await ensureBucketExists(); // Remove this if we can assume the bucket to exist
-    const token = await getInternalToken();
+async function uploadObject(objectName, filePath) {
+    await ensureBucketExists(FORGE_BUCKET);
     const buffer = fs.readFileSync(filePath);
-    const response = await new ObjectsApi().uploadObject(BUCKET, objectName, buffer.byteLength, buffer, {}, null, token);
+    const resp = await new ObjectsApi().uploadObject(FORGE_BUCKET, objectName, buffer.byteLength, buffer, {}, null, await getInternalToken());
+    return resp.body;
+}
+
+async function translateObject(urn, rootFilename) {
     const job = {
-        input: {
-            urn: urnify(response.body.objectId)
-        },
-        output: {
-            formats: [{ type: 'svf', views: ['2d', '3d'] }]
-        }
+        input: { urn },
+        output: { formats: [{ type: 'svf', views: ['2d', '3d'] }] }
     };
     if (rootFilename) {
         job.input.compressedUrn = true;
         job.input.rootFilename = rootFilename;
     }
-    await new DerivativesApi().translate(job, {}, null, token);
+    const resp = await new DerivativesApi().translate(job, {}, null, await getInternalToken());
+    return resp.body;
+}
+
+async function getManifest(urn) {
+    try {
+        const resp = await new DerivativesApi().getManifest(urn, {}, null, await getInternalToken());
+        return resp.body;
+    } catch (err) {
+        if (err.statusCode === 404) {
+            return null;
+        } else {
+            throw err;
+        }
+    }
+}
+
+function urnify(id) {
+    return Buffer.from(id).toString('base64').replace(/=/g, '');
 }
 
 module.exports = {
     getPublicToken,
-    listModels,
-    uploadModel
+    listObjects,
+    uploadObject,
+    translateObject,
+    getManifest,
+    urnify
 };

@@ -1,5 +1,5 @@
 const express = require('express');
-const PORT = process.env.PORT || 3000;
+const { PORT } = require('./config.js');
 
 let app = express();
 app.use(express.static('public'));

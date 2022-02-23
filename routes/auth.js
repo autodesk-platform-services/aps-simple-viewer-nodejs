@@ -3,6 +3,8 @@ const { getPublicToken } = require('../services/forge.js');
 
 let router = express.Router();
 
+// GET /api/token
+// Get public access token to be used by the viewer.
 router.get('/token', async function (req, res, next) {
     try {
         res.json(await getPublicToken());
