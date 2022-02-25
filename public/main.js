@@ -62,6 +62,10 @@ async function setupModelUpload(viewer) {
 }
 
 async function onModelSelected(viewer, urn) {
+    if (window.onModelSelectedTimeout) {
+        clearTimeout(window.onModelSelectedTimeout);
+        delete window.onModelSelectedTimeout;
+    }
     window.location.hash = urn;
     try {
         const resp = await fetch(`/api/models/${urn}/status`);
@@ -74,10 +78,11 @@ async function onModelSelected(viewer, urn) {
                 showNotification(`Model has not been translated.`);
                 break;
             case 'inprogress':
-                showNotification(`Model is being translated (${status.progress}). Try again later.`);
+                showNotification(`Model is being translated (${status.progress})...`);
+                window.onModelSelectedTimeout = setTimeout(onModelSelected, 5000, viewer, urn);
                 break;
             case 'failed':
-                showNotification(`Translation failed. <ul>${status.messages.map(msg => `<li>${JSON.stringify(msg)}</li>`)}</ul>`);
+                showNotification(`Translation failed. <ul>${status.messages.map(msg => `<li>${JSON.stringify(msg)}</li>`).join('')}</ul>`);
                 break;
             default:
                 clearNotification();
