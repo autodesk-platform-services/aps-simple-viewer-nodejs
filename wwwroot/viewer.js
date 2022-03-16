@@ -1,19 +1,20 @@
 /// import * as Autodesk from "@types/forge-viewer";
 
-export function initViewer(container) {
-    async function getAccessToken(callback) {
-        try {
-            const resp = await fetch('/api/auth/token');
-            if (!resp.ok) {
-                throw new Error(await resp.text());
-            }
-            const { access_token, expires_in } = await resp.json();
-            callback(access_token, expires_in);
-        } catch (err) {
-            alert('Could not obtain access token. See the console for more details.');
-            console.error(err);
+async function getAccessToken(callback) {
+    try {
+        const resp = await fetch('/api/auth/token');
+        if (!resp.ok) {
+            throw new Error(await resp.text());
         }
+        const { access_token, expires_in } = await resp.json();
+        callback(access_token, expires_in);
+    } catch (err) {
+        alert('Could not obtain access token. See the console for more details.');
+        console.error(err);
     }
+}
+
+export function initViewer(container) {
     return new Promise(function (resolve, reject) {
         Autodesk.Viewing.Initializer({ getAccessToken }, function () {
             const config = {

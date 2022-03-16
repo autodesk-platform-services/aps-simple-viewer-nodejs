@@ -4,7 +4,7 @@ if (!FORGE_CLIENT_ID || !FORGE_CLIENT_SECRET) {
     process.exit(1);
 }
 FORGE_BUCKET = FORGE_BUCKET || `${FORGE_CLIENT_ID.toLowerCase()}-basic-app`;
-PORT = PORT || 3000;
+PORT = PORT || 8080;
 
 module.exports = {
     FORGE_CLIENT_ID,
