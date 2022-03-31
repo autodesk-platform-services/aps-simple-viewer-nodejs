@@ -1,6 +1,7 @@
 const express = require('express');
 const formidable = require('express-formidable');
-const { listObjects, uploadObject, translateObject, getManifest, urnify } = require('../services/forge.js');
+const { listObjects, uploadObject } = require('../services/forge/oss.js');
+const { translateObject, getManifest, urnify } = require('../services/forge/md.js');
 
 let router = express.Router();
 
