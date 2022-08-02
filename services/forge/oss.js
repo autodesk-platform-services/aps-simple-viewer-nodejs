@@ -30,8 +30,18 @@ async function listObjects() {
 async function uploadObject(objectName, filePath) {
     await ensureBucketExists(FORGE_BUCKET);
     const buffer = fs.readFileSync(filePath);
-    const resp = await new ObjectsApi().uploadObject(FORGE_BUCKET, objectName, buffer.byteLength, buffer, {}, null, await getInternalToken());
-    return resp.body;
+    const results = await new ObjectsApi().uploadResources(
+        FORGE_BUCKET,
+        [{ objectKey: objectName, data: buffer }],
+        { useAcceleration: false, minutesExpiration: 15 },
+        null,
+        await getInternalToken()
+    );
+    if (results[0].error) {
+        throw results[0].error;
+    } else {
+        return results[0].completed;
+    }
 }
 
 module.exports = {
