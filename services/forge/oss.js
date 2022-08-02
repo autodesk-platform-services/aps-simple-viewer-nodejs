@@ -29,7 +29,7 @@ async function listObjects() {
 
 async function uploadObject(objectName, filePath) {
     await ensureBucketExists(FORGE_BUCKET);
-    const buffer = fs.readFileSync(filePath);
+    const buffer = await fs.promises.readFile(filePath);
     const results = await new ObjectsApi().uploadResources(
         FORGE_BUCKET,
         [{ objectKey: objectName, data: buffer }],
