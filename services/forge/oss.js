@@ -38,7 +38,7 @@ async function uploadObject(objectName, filePath) {
         await getInternalToken()
     );
     if (results[0].error) {
-        throw results[0].error;
+        throw results[0].completed;
     } else {
         return results[0].completed;
     }
