@@ -19,7 +19,7 @@ async function getManifest(urn) {
         const resp = await new DerivativesApi().getManifest(urn, {}, null, await getInternalToken());
         return resp.body;
     } catch (err) {
-        if (err.statusCode === 404) {
+        if (err.response.status === 404) {
             return null;
         } else {
             throw err;

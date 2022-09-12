@@ -7,7 +7,7 @@ async function ensureBucketExists(bucketKey) {
     try {
         await new BucketsApi().getBucketDetails(bucketKey, null, await getInternalToken());
     } catch (err) {
-        if (err.statusCode === 404) {
+        if (err.response.status === 404) {
             await new BucketsApi().createBucket({ bucketKey, policyKey: 'temporary' }, {}, null, await getInternalToken());
         } else {
             throw err;
