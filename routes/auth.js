@@ -1,5 +1,5 @@
 const express = require('express');
-const { getPublicToken } = require('../services/forge/auth.js');
+const { getPublicToken } = require('../services/aps/auth.js');
 
 let router = express.Router();
 

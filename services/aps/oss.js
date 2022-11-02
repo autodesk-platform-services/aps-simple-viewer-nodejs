@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { BucketsApi, ObjectsApi } = require('forge-apis');
-const { FORGE_BUCKET } = require('../../config.js');
+const { APS_BUCKET } = require('../../config.js');
 const { getInternalToken } = require('./auth.js');
 
 async function ensureBucketExists(bucketKey) {
@@ -16,22 +16,22 @@ async function ensureBucketExists(bucketKey) {
 }
 
 async function listObjects() {
-    await ensureBucketExists(FORGE_BUCKET);
-    let resp = await new ObjectsApi().getObjects(FORGE_BUCKET, { limit: 64 }, null, await getInternalToken());
+    await ensureBucketExists(APS_BUCKET);
+    let resp = await new ObjectsApi().getObjects(APS_BUCKET, { limit: 64 }, null, await getInternalToken());
     let objects = resp.body.items;
     while (resp.body.next) {
         const startAt = new URL(resp.body.next).searchParams.get('startAt');
-        resp = await new ObjectsApi().getObjects(FORGE_BUCKET, { limit: 64, startAt }, null, await getInternalToken());
+        resp = await new ObjectsApi().getObjects(APS_BUCKET, { limit: 64, startAt }, null, await getInternalToken());
         objects = objects.concat(resp.body.items);
     }
     return objects;
 }
 
 async function uploadObject(objectName, filePath) {
-    await ensureBucketExists(FORGE_BUCKET);
+    await ensureBucketExists(APS_BUCKET);
     const buffer = await fs.promises.readFile(filePath);
     const results = await new ObjectsApi().uploadResources(
-        FORGE_BUCKET,
+        APS_BUCKET,
         [{ objectKey: objectName, data: buffer }],
         { useAcceleration: false, minutesExpiration: 15 },
         null,

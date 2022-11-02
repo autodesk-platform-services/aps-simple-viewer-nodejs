@@ -1,8 +1,8 @@
 const { AuthClientTwoLegged } = require('forge-apis');
-const { FORGE_CLIENT_ID, FORGE_CLIENT_SECRET } = require('../../config.js');
+const { APS_CLIENT_ID, APS_CLIENT_SECRET } = require('../../config.js');
 
-let internalAuthClient = new AuthClientTwoLegged(FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, ['bucket:read', 'bucket:create', 'data:read', 'data:write', 'data:create'], true);
-let publicAuthClient = new AuthClientTwoLegged(FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, ['viewables:read'], true);
+let internalAuthClient = new AuthClientTwoLegged(APS_CLIENT_ID, APS_CLIENT_SECRET, ['bucket:read', 'bucket:create', 'data:read', 'data:write', 'data:create'], true);
+let publicAuthClient = new AuthClientTwoLegged(APS_CLIENT_ID, APS_CLIENT_SECRET, ['viewables:read'], true);
 
 async function getInternalToken() {
     if (!internalAuthClient.isAuthorized()) {

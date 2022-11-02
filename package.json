@@ -1,13 +1,12 @@
 {
-  "name": "forge-simple-viewer-nodejs",
+  "name": "aps-simple-viewer-nodejs",
   "version": "1.0.0",
-  "description": "Autodesk Forge sample app showing the basic viewing capabilities.",
+  "description": "Autodesk Platform Services application built by following the Simple Viewer tutorial from https://tutorials.autodesk.io.",
   "scripts": {
     "start": "node server.js"
   },
   "keywords": [
-    "autodesk",
-    "forge"
+    "autodesk-platform-services"
   ],
   "author": "Petr Broz <petr.broz@autodesk.com>",
   "license": "MIT",
