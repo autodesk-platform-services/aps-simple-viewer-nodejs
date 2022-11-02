@@ -1,13 +1,10 @@
 const express = require('express');
 const formidable = require('express-formidable');
-const { listObjects, uploadObject } = require('../services/aps/oss.js');
-const { translateObject, getManifest, urnify } = require('../services/aps/md.js');
+const { listObjects, uploadObject, translateObject, getManifest, urnify } = require('../services/aps.js');
 
 let router = express.Router();
 
-// GET /api/models
-// List all uploaded models.
-router.get('/', async function (req, res, next) {
+router.get('/api/models', async function (req, res, next) {
     try {
         const objects = await listObjects();
         res.json(objects.map(o => ({
@@ -19,9 +16,7 @@ router.get('/', async function (req, res, next) {
     }
 });
 
-// GET /api/models/:urn/status
-// Get the translation status for specific model URN.
-router.get('/:urn/status', async function (req, res, next) {
+router.get('/api/models/:urn/status', async function (req, res, next) {
     try {
         const manifest = await getManifest(req.params.urn);
         if (manifest) {
@@ -45,9 +40,7 @@ router.get('/:urn/status', async function (req, res, next) {
     }
 });
 
-// POST /api/models
-// Upload new model and kick-off its translation.
-router.post('/', formidable(), async function (req, res, next) {
+router.post('/api/models', formidable(), async function (req, res, next) {
     const file = req.files['model-file'];
     if (!file) {
         res.status(400).send('The required field ("model-file") is missing.');
