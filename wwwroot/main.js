@@ -33,22 +33,44 @@ async function setupModelUpload(viewer) {
     upload.onclick = () => input.click();
     input.onchange = async () => {
         const file = input.files[0];
-        let data = new FormData();
-        data.append('model-file', file);
-        if (file.name.endsWith('.zip')) { // When uploading a zip file, ask for the main design file in the archive
-            const entrypoint = window.prompt('Please enter the filename of the main design inside the archive.');
-            data.append('model-zip-entrypoint', entrypoint);
-        }
         upload.setAttribute('disabled', 'true');
         models.setAttribute('disabled', 'true');
         showNotification(`Uploading model <em>${file.name}</em>. Do not reload the page.`);
+
         try {
-            const resp = await fetch('/api/models', { method: 'POST', body: data });
+            // Get upload URL
+            let resp = await fetch('/api/models', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: file.name })
+            });
             if (!resp.ok) {
-                throw new Error(await resp.text());
+                throw new Error('Could not generate upload URL: ' + await resp.text());
             }
-            const model = await resp.json();
-            setupModelSelection(viewer, model.urn);
+            const { signedUrl } = await resp.json();
+
+            // Upload file
+            resp = await fetch(signedUrl, { method: 'PUT', body: file });
+            if (!resp.ok) {
+                throw new Error('Could not upload file: ' + await resp.text());
+            }
+            const { objectId } = await resp.json();
+
+            // Translate file
+            const urn = window.btoa(objectId).replace(/=+$/, '');
+            let entrypoint = undefined;
+            if (file.name.endsWith('.zip')) { // When uploading a zip file, ask for the main design file in the archive
+                entrypoint = window.prompt('Please enter the filename of the main design inside the archive.');
+            }
+            resp = await fetch(`/api/models/${urn}/translate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ entrypoint })
+            });
+            if (!resp.ok) {
+                throw new Error('Could not translate design: ' + await resp.text());
+            }
+            setupModelSelection(viewer, urn);
         } catch (err) {
             alert(`Could not upload model ${file.name}. See the console for more details.`);
             console.error(err);

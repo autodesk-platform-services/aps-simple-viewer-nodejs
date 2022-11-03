@@ -1,4 +1,3 @@
-const fs = require('fs');
 const APS = require('forge-apis');
 const { APS_CLIENT_ID, APS_CLIENT_SECRET, APS_BUCKET } = require('../config.js');
 
@@ -45,21 +44,17 @@ service.listObjects = async () => {
     return objects;
 };
 
-service.uploadObject = async (objectName, filePath) => {
+service.getUploadUrl = async (objectName) => {
     await service.ensureBucketExists(APS_BUCKET);
-    const buffer = await fs.promises.readFile(filePath);
-    const results = await new APS.ObjectsApi().uploadResources(
+    const resp = await new APS.ObjectsApi().createSignedResource(
         APS_BUCKET,
-        [{ objectKey: objectName, data: buffer }],
-        { useAcceleration: false, minutesExpiration: 15 },
+        objectName,
+        { minutesExpiration: 15 },
+        { access: 'readwrite' },
         null,
         await service.getInternalToken()
     );
-    if (results[0].error) {
-        throw results[0].completed;
-    } else {
-        return results[0].completed;
-    }
+    return resp.body;
 };
 
 service.translateObject = async (urn, rootFilename) => {

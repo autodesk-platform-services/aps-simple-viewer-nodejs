@@ -12,7 +12,6 @@
   "license": "MIT",
   "dependencies": {
     "express": "^4.17.1",
-    "express-formidable": "^1.2.0",
     "forge-apis": "^0.9.1"
   },
   "devDependencies": {

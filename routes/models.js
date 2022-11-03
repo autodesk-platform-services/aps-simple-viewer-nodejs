@@ -1,6 +1,5 @@
 const express = require('express');
-const formidable = require('express-formidable');
-const { listObjects, uploadObject, translateObject, getManifest, urnify } = require('../services/aps.js');
+const { listObjects, getUploadUrl, translateObject, getManifest, urnify } = require('../services/aps.js');
 
 let router = express.Router();
 
@@ -11,6 +10,26 @@ router.get('/api/models', async function (req, res, next) {
             name: o.objectKey,
             urn: urnify(o.objectId)
         })));
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/api/models', async function (req, res, next) {
+    try {
+        const { name } = req.body;
+        res.json(await getUploadUrl(name));
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/api/models/:urn/translate', async function (req, res, next) {
+    try {
+        const { urn } = req.params;
+        const { entrypoint } = req.body;
+        await translateObject(urn, entrypoint);
+        res.status(200).end();
     } catch (err) {
         next(err);
     }
@@ -35,24 +54,6 @@ router.get('/api/models/:urn/status', async function (req, res, next) {
         } else {
             res.json({ status: 'n/a' });
         }
-    } catch (err) {
-        next(err);
-    }
-});
-
-router.post('/api/models', formidable(), async function (req, res, next) {
-    const file = req.files['model-file'];
-    if (!file) {
-        res.status(400).send('The required field ("model-file") is missing.');
-        return;
-    }
-    try {
-        const obj = await uploadObject(file.name, file.path);
-        await translateObject(urnify(obj.objectId), req.fields['model-zip-entrypoint']);
-        res.json({
-            name: obj.objectKey,
-            urn: urnify(obj.objectId)
-        });
     } catch (err) {
         next(err);
     }
