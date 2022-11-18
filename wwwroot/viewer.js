@@ -18,10 +18,14 @@ export function initViewer(container) {
     return new Promise(function (resolve, reject) {
         Autodesk.Viewing.Initializer({ getAccessToken }, function () {
             const config = {
-                extensions: ['Autodesk.DocumentBrowser']
+                extensions: ['Autodesk.DocumentBrowser', 'PotreeExtension']
             };
             const viewer = new Autodesk.Viewing.GuiViewer3D(container, config);
-            viewer.start();
+            viewer.start(undefined, undefined, undefined, undefined, {
+                webglInitParams: {
+                    useWebGL2: false
+                }
+            });
             viewer.setTheme('light-theme');
             resolve(viewer);
         });
