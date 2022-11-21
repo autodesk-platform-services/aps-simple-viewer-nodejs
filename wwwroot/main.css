@@ -5,7 +5,7 @@ body, html {
     font-family: ArtifaktElement;
 }
 
-#header, #preview, #overlay {
+#header, #preview {
     position: absolute;
     width: 100%;
 }
@@ -18,23 +18,9 @@ body, html {
     align-items: center;
 }
 
-#preview, #overlay {
+#preview {
     top: 3em;
     bottom: 0;
-}
-
-#overlay {
-    z-index: 1;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 1em;
-    display: none;
-}
-
-#overlay > .notification {
-    margin: auto;
-    padding: 1em;
-    max-width: 50%;
-    background: white;
 }
 
 #header > * {
