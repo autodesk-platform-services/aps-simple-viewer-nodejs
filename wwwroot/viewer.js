@@ -1,5 +1,9 @@
 /// import * as Autodesk from "@types/forge-viewer";
 
+import { CustomTreeViewExtension } from './CustomTreeViewExtension.js';
+
+Autodesk.Viewing.theExtensionManager.registerExtension('CustomTreeViewExtension', CustomTreeViewExtension);
+
 async function getAccessToken(callback) {
     try {
         const resp = await fetch('/api/auth/token');
@@ -18,7 +22,7 @@ export function initViewer(container) {
     return new Promise(function (resolve, reject) {
         Autodesk.Viewing.Initializer({ getAccessToken }, function () {
             const config = {
-                extensions: ['Autodesk.DocumentBrowser']
+                extensions: ['CustomTreeViewExtension']
             };
             const viewer = new Autodesk.Viewing.GuiViewer3D(container, config);
             viewer.start();
