@@ -1,14 +1,13 @@
 {
   "name": "aps-simple-viewer-nodejs",
   "version": "1.0.0",
-  "description": "Autodesk Platform Services application built by following the Simple Viewer tutorial from https://tutorials.autodesk.io.",
+  "description": "Autodesk Platform Services application built by following the Simple Viewer tutorial from https://aps.autodesk.com/tutorials.",
   "scripts": {
     "start": "node server.js"
   },
   "keywords": [
     "autodesk-platform-services"
   ],
-  "author": "Petr Broz <petr.broz@autodesk.com>",
   "license": "MIT",
   "dependencies": {
     "express": "^4.17.1",

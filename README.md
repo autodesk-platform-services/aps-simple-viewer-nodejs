@@ -1,4 +1,4 @@
-# aps-simple-viewer-nodejs
+# Simple Viewer (Node.js)
 
 ![platforms](https://img.shields.io/badge/platform-windows%20%7C%20osx%20%7C%20linux-lightgray.svg)
 [![node.js](https://img.shields.io/badge/Node.js-16.16-blue.svg)](https://nodejs.org)
@@ -9,7 +9,7 @@
 the [Simple Viewer](https://tutorials.autodesk.io/tutorials/simple-viewer/) tutorial
 from https://tutorials.autodesk.io.
 
-![screenshot](screenshot.png)
+![screenshot](thumbnail.png)
 
 ## Development
 
