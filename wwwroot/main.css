@@ -5,7 +5,7 @@ body, html {
     font-family: ArtifaktElement;
 }
 
-#header, #preview, #overlay {
+#header, #preview1, #preview2, #overlay {
     position: absolute;
     width: 100%;
 }
@@ -18,9 +18,18 @@ body, html {
     align-items: center;
 }
 
-#preview, #overlay {
+#preview1 {
     top: 3em;
     bottom: 0;
+    left: 0;
+    width: 50%;
+}
+
+#preview2 {
+    top: 3em;
+    bottom: 0;
+    right: 0;
+    width: 50%;
 }
 
 #overlay {

@@ -1,10 +1,14 @@
 import { initViewer, loadModel } from './viewer.js';
 
-initViewer(document.getElementById('preview')).then(viewer => {
-    const urn = window.location.hash?.substring(1);
-    setupModelSelection(viewer, urn);
-    setupModelUpload(viewer);
-});
+// Initialize and setup the first viewer
+const viewer1 = await initViewer(document.getElementById('preview1'));
+const urn = window.location.hash?.substring(1);
+setupModelSelection(viewer1, urn);
+setupModelUpload(viewer1);
+
+// Initialize the second viewer, and load a specific model into it
+const viewer2 = await initViewer(document.getElementById('preview2'));
+loadModel(viewer2, 'your urn');
 
 async function setupModelSelection(viewer, selectedUrn) {
     const dropdown = document.getElementById('models');
