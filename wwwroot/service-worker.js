@@ -38,6 +38,7 @@ const CACHED_URLS = [
     'https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/res/textures/VChome.png',
     'https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/res/textures/VChomeS.png',
     'https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/res/ui/powered-by-autodesk-blk-rgb.png',
+    'https://fonts.autodesk.com/ArtifaktElement/WOFF2/Artifakt%20Element%20Medium.woff2',
     // TODO: where to get the full list of all Viewer resources?
 ];
 

@@ -1,5 +1,4 @@
 const path = require('path');
-const zlib = require('zlib');
 const Zip = require('adm-zip');
 const axios = require('axios').default;
 const APS = require('forge-apis');
@@ -18,13 +17,15 @@ async function findModelAssets(urn, credentials) {
         urns.push(resource.urn);
         switch (resource.mime) {
             case 'application/autodesk-svf':
-                const svfAssetUrls = await getSvfAssets(urn, resource.urn, credentials.access_token);
-                for (const svfAssetUrl of svfAssetUrls) {
-                    const resourceUrn = decodeURIComponent(resource.urn);
-                    const urnSegment = resourceUrn.slice(0, resourceUrn.indexOf('/'));
-                    const pathSegment = resourceUrn.slice(resourceUrn.indexOf('/'));
-                    const resolvedAssetPath = urnSegment + path.resolve(path.dirname(pathSegment), svfAssetUrl);
-                    urns.push(resolvedAssetPath);
+                const svfAssetPaths = await getSvfAssets(urn, resource.urn, credentials.access_token);
+                for (const assetPath of svfAssetPaths) {
+                    urns.push(resolveAssetPath(resource.urn, assetPath));
+                }
+                break;
+            case 'application/autodesk-f2d':
+                const f2dAssetPaths = await getF2dAssets(urn, resource.urn, credentials.access_token);
+                for (const assetPath of f2dAssetPaths) {
+                    urns.push(resolveAssetPath(resource.urn, assetPath));
                 }
                 break;
             default:
@@ -49,18 +50,11 @@ function findManifestResources(manifest) {
     return resources;
 }
 
-// function getPathInfo(encodedURN) {
-//     const urn = decodeURIComponent(encodedURN);
-//     const rootFileName = urn.slice(urn.lastIndexOf('/') + 1);
-//     const basePath = urn.slice(0, urn.lastIndexOf('/') + 1);
-//     const localPath = basePath.slice(basePath.indexOf('/') + 1).replace(/^output\//, '');
-//     return {
-//         urn,
-//         rootFileName,
-//         localPath,
-//         basePath
-//     };
-// }
+function resolveAssetPath(resourceUrn, assetPath) {
+    const urnSegment = resourceUrn.slice(0, resourceUrn.indexOf('/'));
+    const pathSegment = resourceUrn.slice(resourceUrn.indexOf('/'));
+    return urnSegment + path.resolve(path.dirname(pathSegment), assetPath);
+}
 
 async function getManifest(modelUrn, credentials) {
     const resp = await new APS.DerivativesApi().getManifest(modelUrn, {}, null, credentials);
@@ -96,20 +90,14 @@ async function getSvfAssets(modelUrn, derivativeUrn, token) {
         .filter(uri => uri.indexOf('embed:/') === -1);
 }
 
-// async function getF2dAssets(item, token) {
-//     const manifestPath = item.basePath + 'manifest.json.gz';
-//     const data = await getDerivative(manifestPath, token);
-//     const manifestData = zlib.gunzipSync(data);
-//     const manifest = JSON.parse(manifestData.toString('utf8'));
-//     if (!manifest.assets) {
-//         return [];
-//     }
-
-//     return manifest.assets
-//         .map(asset => asset.URI)
-//         .filter(uri => uri.indexOf('embed:/') === -1)
-//         .concat(['manifest.json.gz']);
-// }
+async function getF2dAssets(modelUrn, derivativeUrn, token) {
+    const data = await getDerivative(modelUrn, resolveAssetPath(derivativeUrn, 'manifest.json.gz'), token); // Note: the file is automatically unzipped by axios
+    const manifest = JSON.parse(data.toString('utf8'));
+    return (manifest.assets || [])
+        .map(asset => asset.URI)
+        .filter(uri => uri.indexOf('embed:/') === -1)
+        .concat(['manifest.json.gz']);
+}
 
 module.exports = {
     findModelAssets
