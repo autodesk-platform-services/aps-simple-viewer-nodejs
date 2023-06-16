@@ -5,4 +5,5 @@ let app = express();
 app.use(express.static('wwwroot'));
 app.use(require('./routes/auth.js'));
 app.use(require('./routes/models.js'));
+app.use(require('./routes/markups.js'));
 app.listen(PORT, function () { console.log(`Server listening on port ${PORT}...`); });

@@ -4,6 +4,7 @@ initViewer(document.getElementById('preview')).then(viewer => {
     const urn = window.location.hash?.substring(1);
     setupModelSelection(viewer, urn);
     setupModelUpload(viewer);
+    setupMarkups(viewer);
 });
 
 async function setupModelSelection(viewer, selectedUrn) {
@@ -26,11 +27,42 @@ async function setupModelSelection(viewer, selectedUrn) {
     }
 }
 
+async function setupMarkups(viewer){
+    const edit = document.getElementById('edit');
+    const save = document.getElementById('save');
+    const load = document.getElementById('load');
+    let markupext = null;
+    edit.onclick = async () => {
+        markupext = viewer.getExtension('Autodesk.Viewing.MarkupsCore');
+        markupext.enterEditMode();
+        // let cloud = new Autodesk.Viewing.Extensions.Markups.Core.EditModeCloud(markup)
+        // markupext.changeEditMode(cloud)
+    }
+    save.onclick = async () => {
+        let markupsPdata = markupext.generateData();
+        markupext.leaveEditMode()
+        markupext.hide()
+        const resp = await fetch('/api/markups', { method: 'POST',headers: { "Content-Type": "application/json",}, body: JSON.stringify({ 'data': markupsPdata }) });
+            if (!resp.ok) {
+                throw new Error(await resp.text());
+            }
+    }
+    load.onclick = async () => {
+        markupext = viewer.getExtension('Autodesk.Viewing.MarkupsCore');
+        const resp = await fetch('/api/markups', { method: 'GET'});
+        const data = await resp.json();
+        markupext.show();
+        markupext.loadMarkups(data.markups, 'my-custom-layer');
+    }
+}
+
 async function setupModelUpload(viewer) {
     const upload = document.getElementById('upload');
+    
     const input = document.getElementById('input');
     const models = document.getElementById('models');
     upload.onclick = () => input.click();
+    
     input.onchange = async () => {
         const file = input.files[0];
         let data = new FormData();

@@ -18,7 +18,7 @@ export function initViewer(container) {
     return new Promise(function (resolve, reject) {
         Autodesk.Viewing.Initializer({ getAccessToken }, function () {
             const config = {
-                extensions: ['Autodesk.DocumentBrowser']
+                extensions: ['Autodesk.DocumentBrowser','Autodesk.Viewing.MarkupsCore', 'Autodesk.Viewing.MarkupsGui']
             };
             const viewer = new Autodesk.Viewing.GuiViewer3D(container, config);
             viewer.start();
