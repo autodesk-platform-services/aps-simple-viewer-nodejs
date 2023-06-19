@@ -1,7 +1,6 @@
 const express = require('express');
 const fs = require('fs')
 const fsPromises = require('fs').promises;
-const bodyParser = require('body-parser')
 
 let router = express.Router();
 
@@ -14,7 +13,7 @@ router.get('/api/markups', async function (req, res, next) {
     }
 });
 
-router.post('/api/markups', bodyParser.json(), async function (req, res, next) {
+router.post('/api/markups', express.json(), async function (req, res, next) {
     try {
         fs.writeFile('Markups.svg', req.body.data, (err) => {
             if (err) throw err;

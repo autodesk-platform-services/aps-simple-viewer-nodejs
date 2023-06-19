@@ -35,22 +35,23 @@ async function setupMarkups(viewer){
     edit.onclick = async () => {
         markupext = viewer.getExtension('Autodesk.Viewing.MarkupsCore');
         markupext.enterEditMode();
-        // let cloud = new Autodesk.Viewing.Extensions.Markups.Core.EditModeCloud(markup)
-        // markupext.changeEditMode(cloud)
     }
     save.onclick = async () => {
         let markupsPdata = markupext.generateData();
         markupext.leaveEditMode()
         markupext.hide()
         const resp = await fetch('/api/markups', { method: 'POST',headers: { "Content-Type": "application/json",}, body: JSON.stringify({ 'data': markupsPdata }) });
-            if (!resp.ok) {
-                throw new Error(await resp.text());
-            }
+        if (!resp.ok) {
+            throw new Error(await resp.text());
+        }
     }
     load.onclick = async () => {
         markupext = viewer.getExtension('Autodesk.Viewing.MarkupsCore');
         const resp = await fetch('/api/markups', { method: 'GET'});
         const data = await resp.json();
+        if (!resp.ok) {
+            throw new Error(await resp.text());
+        }
         markupext.show();
         markupext.loadMarkups(data.markups, 'my-custom-layer');
     }
