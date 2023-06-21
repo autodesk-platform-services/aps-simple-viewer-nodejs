@@ -28,15 +28,12 @@ async function setupModelSelection(viewer, selectedUrn) {
 }
 
 async function setupMarkups(viewer){
-    const edit = document.getElementById('edit');
     const save = document.getElementById('save');
     const load = document.getElementById('load');
     let markupext = null;
-    edit.onclick = async () => {
-        markupext = viewer.getExtension('Autodesk.Viewing.MarkupsCore');
-        markupext.enterEditMode();
-    }
+    
     save.onclick = async () => {
+        markupext = viewer.getExtension('Autodesk.Viewing.MarkupsCore');
         let markupsPdata = markupext.generateData();
         markupext.leaveEditMode()
         markupext.hide()
@@ -54,6 +51,7 @@ async function setupMarkups(viewer){
         }
         markupext.show();
         markupext.loadMarkups(data.markups, 'my-custom-layer');
+        markupext.enterEditMode('my-custom-layer');
     }
 }
 
