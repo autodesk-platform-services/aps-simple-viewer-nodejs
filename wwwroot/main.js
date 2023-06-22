@@ -4,7 +4,8 @@ initViewer(document.getElementById('preview')).then(viewer => {
     const urn = window.location.hash?.substring(1);
     setupModelSelection(viewer, urn);
     setupModelUpload(viewer);
-    setupMarkups(viewer);
+    viewer.addEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, ()=>{setupMarkups(viewer);});
+    // setupMarkups(viewer);
 });
 
 async function setupModelSelection(viewer, selectedUrn) {
@@ -28,31 +29,51 @@ async function setupModelSelection(viewer, selectedUrn) {
 }
 
 async function setupMarkups(viewer){
-    const save = document.getElementById('save');
-    const load = document.getElementById('load');
-    let markupext = null;
-    
-    save.onclick = async () => {
-        markupext = viewer.getExtension('Autodesk.Viewing.MarkupsCore');
+    let markupext = viewer.getExtension('Autodesk.Viewing.MarkupsCore');
+    let urn = viewer.model.getSeedUrn();
+    async function saveMarkups(){
         let markupsPdata = markupext.generateData();
-        markupext.leaveEditMode()
-        markupext.hide()
-        const resp = await fetch('/api/markups', { method: 'POST',headers: { "Content-Type": "application/json",}, body: JSON.stringify({ 'data': markupsPdata }) });
+        const resp = await fetch('/api/markups', { method: 'POST',headers: { "Content-Type": "application/json",}, body: JSON.stringify({ 'urn':urn,'data': markupsPdata }) });
         if (!resp.ok) {
             throw new Error(await resp.text());
         }
     }
-    load.onclick = async () => {
-        markupext = viewer.getExtension('Autodesk.Viewing.MarkupsCore');
-        const resp = await fetch('/api/markups', { method: 'GET'});
+    async function loadMarkups() {
+        const resp = await fetch(`/api/markups?urn=${urn}`, { method: 'GET'});
+        if (!resp.ok) {
+            throw new Error(await resp.text());
+        }
         const data = await resp.json();
-        if (!resp.ok) {
-            throw new Error(await resp.text());
+        if (data.markups) {
+            markupext.leaveEditMode()
+            markupext.show();
+            markupext.loadMarkups(data.markups, 'my-custom-layer');
+            markupext.enterEditMode('my-custom-layer');
         }
-        markupext.show();
-        markupext.loadMarkups(data.markups, 'my-custom-layer');
-        markupext.enterEditMode('my-custom-layer');
     }
+    viewer.addEventListener(Autodesk.Viewing.EXTENSION_ACTIVATED_EVENT, function (ev) {
+        console.log('EXTENSION_ACTIVATED_EVENT', ev);
+        if (ev.extensionId === 'Autodesk.Viewing.MarkupsGui') {
+            loadMarkups();
+        }
+    });
+    markupext.addEventListener('EVENT_EDITMODE_CHANGED', function (ev) {
+        const editTool = ev.target;
+        if (editTool) {
+            editTool.addEventListener('EVENT_EDITMODE_CREATION_END', function (ev) {
+                // console.log('EVENT_EDITMODE_CREATION_END', ev);
+                saveMarkups()
+            });
+            editTool.addEventListener('EVENT_MARKUP_DESELECT', function (ev) {
+                // console.log('EVENT_MARKUP_DESELECT', ev);
+                saveMarkups()
+            });
+        }
+    });
+    markupext.editFrame.addEventListener('EVENT_EDITFRAME_EDITION_END', function (ev) {
+        // console.log('EVENT_EDITFRAME_EDITION_END', ev);
+        saveMarkups()
+    });
 }
 
 async function setupModelUpload(viewer) {
