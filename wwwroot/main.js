@@ -4,6 +4,8 @@ initViewer(document.getElementById('preview')).then(viewer => {
     const urn = window.location.hash?.substring(1);
     setupModelSelection(viewer, urn);
     setupModelUpload(viewer);
+    viewer.addEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, ()=>{setupMarkups(viewer);});
+    // setupMarkups(viewer);
 });
 
 async function setupModelSelection(viewer, selectedUrn) {
@@ -26,11 +28,61 @@ async function setupModelSelection(viewer, selectedUrn) {
     }
 }
 
+async function setupMarkups(viewer){
+    let markupext = viewer.getExtension('Autodesk.Viewing.MarkupsCore');
+    let urn = viewer.model.getSeedUrn();
+    async function saveMarkups(){
+        let markupsPdata = markupext.generateData();
+        const resp = await fetch('/api/markups', { method: 'POST',headers: { "Content-Type": "application/json",}, body: JSON.stringify({ 'urn':urn,'data': markupsPdata }) });
+        if (!resp.ok) {
+            throw new Error(await resp.text());
+        }
+    }
+    async function loadMarkups() {
+        const resp = await fetch(`/api/markups?urn=${urn}`, { method: 'GET'});
+        if (!resp.ok) {
+            throw new Error(await resp.text());
+        }
+        const data = await resp.json();
+        if (data.markups) {
+            markupext.leaveEditMode()
+            markupext.show();
+            markupext.loadMarkups(data.markups, 'my-custom-layer');
+            markupext.enterEditMode('my-custom-layer');
+        }
+    }
+    viewer.addEventListener(Autodesk.Viewing.EXTENSION_ACTIVATED_EVENT, function (ev) {
+        console.log('EXTENSION_ACTIVATED_EVENT', ev);
+        if (ev.extensionId === 'Autodesk.Viewing.MarkupsGui') {
+            loadMarkups();
+        }
+    });
+    markupext.addEventListener('EVENT_EDITMODE_CHANGED', function (ev) {
+        const editTool = ev.target;
+        if (editTool) {
+            editTool.addEventListener('EVENT_EDITMODE_CREATION_END', function (ev) {
+                // console.log('EVENT_EDITMODE_CREATION_END', ev);
+                saveMarkups()
+            });
+            editTool.addEventListener('EVENT_MARKUP_DESELECT', function (ev) {
+                // console.log('EVENT_MARKUP_DESELECT', ev);
+                saveMarkups()
+            });
+        }
+    });
+    markupext.editFrame.addEventListener('EVENT_EDITFRAME_EDITION_END', function (ev) {
+        // console.log('EVENT_EDITFRAME_EDITION_END', ev);
+        saveMarkups()
+    });
+}
+
 async function setupModelUpload(viewer) {
     const upload = document.getElementById('upload');
+    
     const input = document.getElementById('input');
     const models = document.getElementById('models');
     upload.onclick = () => input.click();
+    
     input.onchange = async () => {
         const file = input.files[0];
         let data = new FormData();
