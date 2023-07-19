@@ -17,10 +17,7 @@ async function getAccessToken(callback) {
 export function initViewer(container) {
     return new Promise(function (resolve, reject) {
         Autodesk.Viewing.Initializer({ getAccessToken }, function () {
-            const config = {
-                extensions: ['Autodesk.DocumentBrowser']
-            };
-            const viewer = new Autodesk.Viewing.GuiViewer3D(container, config);
+            const viewer = new Autodesk.Viewing.GuiViewer3D(container);
             viewer.start();
             viewer.setTheme('light-theme');
             resolve(viewer);
@@ -28,15 +25,15 @@ export function initViewer(container) {
     });
 }
 
-export function loadModel(viewer, urn) {
+export function loadModel(viewer, urn, guid, options) {
     return new Promise(function (resolve, reject) {
         function onDocumentLoadSuccess(doc) {
-            resolve(viewer.loadDocumentNode(doc, doc.getRoot().getDefaultGeometry()));
+            const viewable = guid ? doc.getRoot().findByGuid(guid) : doc.getRoot().getDefaultGeometry();
+            resolve(viewer.loadDocumentNode(doc, viewable, options));
         }
         function onDocumentLoadFailure(code, message, errors) {
             reject({ code, message, errors });
         }
-        viewer.setLightPreset(0);
         Autodesk.Viewing.Document.load('urn:' + urn, onDocumentLoadSuccess, onDocumentLoadFailure);
     });
 }
