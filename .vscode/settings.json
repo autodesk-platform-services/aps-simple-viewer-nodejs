@@ -1,0 +1,8 @@
+{
+    "autodesk.forge.environments": [
+        {}
+    ],
+    "autodesk.forge.viewer.extensions": [
+        "3D Viewer"
+    ]
+}
