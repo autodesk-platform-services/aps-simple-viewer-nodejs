@@ -1,11 +1,27 @@
 {
+    "workbench.colorTheme": "Visual Studio Light",
     "autodesk.forge.environments": [
         
 
+
+
         
-        {}
+
+
+
+
+        {
+            "title": "Logo Configurator Beta",
+            "clientId": "GaKVwWTJYRo9zkpKtv60Y5SAgQkbxH0p",
+            "clientSecret": "ggaGv2e1rrz07qWE",
+            "region": "US"
+        }
     ],
-    "autodesk.forge.viewer.extensions": [
-        "3D Viewer"
+    "window.zoomLevel": 1,
+    "files.autoSave": "afterDelay",
+    "git.enableSmartCommit": true,
+    "git.autofetch": true,
+    "workbench.settings.applyToAllProfiles": [
+        
     ]
 }
