@@ -24,15 +24,19 @@ or [macOS Terminal](https://support.apple.com/guide/terminal/welcome/mac))
 
 - Clone this repository
 - Install dependencies: `npm install`
-- Setup environment variables:
-  - `APS_CLIENT_ID` - your APS application client ID
-  - `APS_CLIENT_SECRET` - your APS application client secret
-  - `APS_BUCKET` (optional) - name of APS bucket to store your designs in
+- Create a _.env_ file in the project folder, specifying environment variables
+required by the application:
+
+```bash
+APS_CLIENT_ID=""       # enter your APS Client ID between the double-quotes
+APS_CLIENT_SECRET=""   # enter your APS Client Secret between the double-quotes
+APS_BUCKET=""          # (optional) enter the name of existing bucket where your designs will be stored
+```
+
 - Run the server: `npm start`
 
-> When using [Visual Studio Code](https://code.visualstudio.com),
-you can specify the env. variables listed above in a _.env_ file in this
-folder, and run & debug the application directly from the editor.
+> When using [Visual Studio Code](https://code.visualstudio.com), you can start the application
+> in debug mode by pressing `F5`.
 
 ## Troubleshooting
 
