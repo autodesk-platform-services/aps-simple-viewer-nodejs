@@ -30,7 +30,6 @@ required by the application:
 ```bash
 APS_CLIENT_ID=""       # enter your APS Client ID between the double-quotes
 APS_CLIENT_SECRET=""   # enter your APS Client Secret between the double-quotes
-APS_BUCKET=""          # (optional) enter the name of existing bucket where your designs will be stored
 ```
 
 - Run the server: `npm start`
