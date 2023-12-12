@@ -12,7 +12,6 @@
             "runtimeArgs": [
                 "start"
             ],
-            "envFile": "${workspaceFolder}/.env",
             "skipFiles": [
                 "<node_internals>/**/*.js"
             ]
