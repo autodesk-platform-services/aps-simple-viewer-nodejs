@@ -16,26 +16,28 @@ from https://tutorials.autodesk.io.
 ### Prerequisites
 
 - [APS credentials](https://forge.autodesk.com/en/docs/oauth/v2/tutorials/create-app)
-- [Node.js](https://nodejs.org) (we recommend the Long Term Support version)
-- Terminal (for example, [Windows Command Prompt](https://en.wikipedia.org/wiki/Cmd.exe)
-or [macOS Terminal](https://support.apple.com/guide/terminal/welcome/mac))
+- [Node.js](https://nodejs.org) (Long Term Support version is recommended)
+- Command-line terminal such as PowerShell or bash (should be available on most systems)
+
+> Consider using [Visual Studio Code](https://code.visualstudio.com) which, among other benefits,
+> includes an [integrated terminal](https://code.visualstudio.com/docs/terminal/basics) as well.
 
 ### Setup & Run
 
 - Clone this repository
-- Install dependencies: `npm install`
-- Create a _.env_ file in the project folder, specifying environment variables
-required by the application:
+- Create a _.env_ file in the project folder, and populate it with your APS credentials:
 
 ```bash
 APS_CLIENT_ID=""       # enter your APS Client ID between the double-quotes
 APS_CLIENT_SECRET=""   # enter your APS Client Secret between the double-quotes
 ```
 
+- Open the terminal, making sure you are in the project folder
+- Install dependencies: `npm install`
 - Run the server: `npm start`
 
-> When using [Visual Studio Code](https://code.visualstudio.com), you can start the application
-> in debug mode by pressing `F5`.
+> When using [Visual Studio Code](https://code.visualstudio.com), you can start
+> the application in debug mode by pressing `F5`.
 
 ## Troubleshooting
 
