@@ -17,27 +17,31 @@ from https://tutorials.autodesk.io.
 
 - [APS credentials](https://forge.autodesk.com/en/docs/oauth/v2/tutorials/create-app)
 - [Node.js](https://nodejs.org) (Long Term Support version is recommended)
-- Command-line terminal such as PowerShell or bash (should be available on most systems)
+- Command-line terminal such as [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/overview)
+or [bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)) (should already be available on your system)
 
-> Consider using [Visual Studio Code](https://code.visualstudio.com) which, among other benefits,
-> includes an [integrated terminal](https://code.visualstudio.com/docs/terminal/basics) as well.
+> We recommend using [Visual Studio Code](https://code.visualstudio.com) which, among other benefits,
+> provides an [integrated terminal](https://code.visualstudio.com/docs/terminal/basics) as well.
 
 ### Setup & Run
 
-- Clone this repository
-- Create a _.env_ file in the project folder, and populate it with your APS credentials:
+- Clone this repository: `git clone https://github.com/autodesk-platform-services/aps-simple-viewer-nodejs`
+- Go to the project folder: `cd aps-simple-viewer-nodejs`
+- Install Node.js dependencies: `npm install`
+- Open the project folder in a code editor of your choice
+- Create a _.env_ file in the project folder, and populate it with the snippet below,
+replacing `<client-id>` and `<client-secret>` with your APS Client ID and Client Secret:
 
 ```bash
-APS_CLIENT_ID=""       # enter your APS Client ID between the double-quotes
-APS_CLIENT_SECRET=""   # enter your APS Client Secret between the double-quotes
+APS_CLIENT_ID="<client-id>"
+APS_CLIENT_SECRET="<client-secret>"
 ```
 
-- Open the terminal, making sure you are in the project folder
-- Install dependencies: `npm install`
-- Run the server: `npm start`
+- Run the application, either from your code editor, or by running `npm start` in terminal
+- Open http://localhost:8080
 
-> When using [Visual Studio Code](https://code.visualstudio.com), you can start
-> the application in debug mode by pressing `F5`.
+> When using [Visual Studio Code](https://code.visualstudio.com), you can run & debug
+> the application by pressing `F5`.
 
 ## Troubleshooting
 
