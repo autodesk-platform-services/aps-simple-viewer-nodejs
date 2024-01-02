@@ -40,7 +40,7 @@ router.get('/api/models/:urn/status', async function (req, res, next) {
     }
 });
 
-router.post('/api/models', formidable(), async function (req, res, next) {
+router.post('/api/models', formidable({ maxFileSize: Infinity }), async function (req, res, next) {
     const file = req.files['model-file'];
     if (!file) {
         res.status(400).send('The required field ("model-file") is missing.');
