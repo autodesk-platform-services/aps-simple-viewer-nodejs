@@ -1,5 +1,6 @@
 {
   "name": "aps-simple-viewer-nodejs",
+  "type": "module",
   "version": "1.0.0",
   "description": "Autodesk Platform Services application built by following the Simple Viewer tutorial from https://aps.autodesk.com/tutorials.",
   "scripts": {
@@ -10,10 +11,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "dotenv": "^16.3.1",
-    "express": "^4.17.1",
-    "express-formidable": "^1.2.0",
-    "forge-apis": "^0.9.1"
+    "dotenv": "^16.4.1",
+    "forge-apis": "^0.9.9",
+    "restify": "^11.1.0"
   },
   "devDependencies": {
     "@types/forge-viewer": "^7.48.0"
