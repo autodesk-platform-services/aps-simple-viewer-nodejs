@@ -1,19 +1,19 @@
 const autodesk_sdkmanager = require("@aps_sdk/autodesk-sdkmanager");
 
 // all theses lines will be gone after publishing to npm
-const authentication = require("../authentication/source/dist/custom-code/AuthenticationClient.js");
-const oss = require("../oss/source/dist/custom-code/OssClient.js");
-const modelDerivative = require("../model-derivative/dist/custom-code/ModelDerivativeClient.js");
-const policyKey = require("../oss/source/dist/model/create-buckets-payload.js");
-const scopes = require("../authentication/source/dist/model/scopes.js");
-const views = require("../model-derivative/dist/model/view.js");
-const type = require("../model-derivative/dist/model/type.js");
+const authentication = require('../authentication/source/dist/custom-code/AuthenticationClient.js');
+const oss = require('../oss/source/dist/custom-code/OssClient.js');
+const modelDerivative = require('../model-derivative/dist/custom-code/ModelDerivativeClient.js');
+const policyKey = require('../oss/source/dist/model/create-buckets-payload.js');
+const scopes = require('../authentication/source/dist/model/scopes.js');
+const views = require('../model-derivative/dist/model/view.js');
+const type = require('../model-derivative/dist/model/type.js');
 
 const {
   APS_CLIENT_ID,
   APS_CLIENT_SECRET,
   APS_BUCKET,
-} = require("../config.js");
+} = require('../config.js');
 
 const sdkmanager = autodesk_sdkmanager.SdkManagerBuilder.Create().build();
 const authenticationClient = new authentication.AuthenticationClient(
@@ -57,7 +57,7 @@ service.ensureBucketExists = async (bucketKey) => {
   } catch (err) {
     if (
       err.message ===
-      "getBucketDetails Request failed with status : 404 and error message: Bucket not found"
+      'getBucketDetails Request failed with status : 404 and error message: Bucket not found'
     ) {
 
       const bucketPayload = {
@@ -85,7 +85,7 @@ service.listObjects = async () => {
 
   while (resp.response.data.next) {
     const startAt = new URL(resp.response.data.next).searchParams.get(
-      "startAt"
+      'startAt'
     );
     resp = await ossClient.getObjects(accessToken, APS_BUCKET, 64, startAt);
     objects = objects.concat(resp.response.data.items);
@@ -146,7 +146,7 @@ service.getManifest = async (urn) => {
     console.log(err.message);
     if (
       err.message ===
-      "getManifest Request failed with status : 404 and error mssage: undefined"
+      'getManifest Request failed with status : 404 and error mssage: undefined'
     ) {
       return null;
     } else {
@@ -155,4 +155,4 @@ service.getManifest = async (urn) => {
   }
 };
 
-service.urnify = (id) => Buffer.from(id).toString("base64").replace(/=/g, "");
+service.urnify = (id) => Buffer.from(id).toString('base64').replace(/=/g, '');
