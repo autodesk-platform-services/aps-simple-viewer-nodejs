@@ -1,0 +1,33 @@
+{
+  "name": "@aps_sdk/oss",
+  "version": "0.0.1-beta.1",
+  "description": "Client sdk for Oss API",
+  "license": "Apache-2.0",
+  "author": "Autodesk Platform Services",
+  "keywords": [
+    "Autodesk Platform Services",
+    "Typescript",
+    "Oss"
+  ],
+  "files": [
+    "/dist"
+  ],
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc && tsc -p tsconfig.esm.json",
+    "prettier-format": "prettier --config .prettierrc \\\"./**/*.ts\\\" --write",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@aps_sdk/autodesk-sdkmanager": "^0.0.4-beta.1",
+    "axios": "^1.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.6",
+    "prettier": "^2.8.8",
+    "typescript": "^5.1.5"
+  }
+}
