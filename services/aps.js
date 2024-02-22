@@ -1,86 +1,94 @@
-const fs = require('fs');
-const APS = require('forge-apis');
+const { SdkManagerBuilder } = require('@aps_sdk/autodesk-sdkmanager');
+const { AuthenticationClient, Scopes } = require('@aps_sdk/authentication');
+const { OssClient, CreateBucketsPayloadPolicyKeyEnum, CreateBucketXAdsRegionEnum } = require('@aps_sdk/oss');
+const { ModelDerivativeClient, View, Type } = require('@aps_sdk/model-derivative');
 const { APS_CLIENT_ID, APS_CLIENT_SECRET, APS_BUCKET } = require('../config.js');
 
-let internalAuthClient = new APS.AuthClientTwoLegged(APS_CLIENT_ID, APS_CLIENT_SECRET, ['bucket:read', 'bucket:create', 'data:read', 'data:write', 'data:create'], true);
-let publicAuthClient = new APS.AuthClientTwoLegged(APS_CLIENT_ID, APS_CLIENT_SECRET, ['viewables:read'], true);
+const sdk = SdkManagerBuilder.Create().build();
+const authenticationClient = new AuthenticationClient(sdk);
+const ossClient = new OssClient(sdk);
+const modelDerivativeClient = new ModelDerivativeClient(sdk);
 
 const service = module.exports = {};
 
 service.getInternalToken = async () => {
-    if (!internalAuthClient.isAuthorized()) {
-        await internalAuthClient.authenticate();
-    }
-    return internalAuthClient.getCredentials();
+    const credentials = await authenticationClient.getTwoLeggedTokenAsync(APS_CLIENT_ID, APS_CLIENT_SECRET, [
+        Scopes.Dataread,
+        Scopes.Datacreate,
+        Scopes.Bucketcreate,
+        Scopes.Bucketread
+    ]);
+    return credentials;
 };
 
 service.getPublicToken = async () => {
-    if (!publicAuthClient.isAuthorized()) {
-        await publicAuthClient.authenticate();
-    }
-    return publicAuthClient.getCredentials();
+    const credentials = await authenticationClient.getTwoLeggedTokenAsync(APS_CLIENT_ID, APS_CLIENT_SECRET, [
+        Scopes.Dataread
+    ]);
+    return credentials;
 };
 
 service.ensureBucketExists = async (bucketKey) => {
+    const { access_token } = await service.getInternalToken();
     try {
-        await new APS.BucketsApi().getBucketDetails(bucketKey, null, await service.getInternalToken());
+        await ossClient.getBucketDetails(access_token, bucketKey);
     } catch (err) {
-        if (err.response.status === 404) {
-            await new APS.BucketsApi().createBucket({ bucketKey, policyKey: 'temporary' }, {}, null, await service.getInternalToken());
+        if (err.axiosError.response.status === 404) {
+            await ossClient.createBucket(access_token, CreateBucketXAdsRegionEnum.Us, {
+                bucketKey: bucketKey,
+                policyKey: CreateBucketsPayloadPolicyKeyEnum.Temporary
+            });
         } else {
-            throw err;
+            throw err;  
         }
     }
 };
 
 service.listObjects = async () => {
     await service.ensureBucketExists(APS_BUCKET);
-    let resp = await new APS.ObjectsApi().getObjects(APS_BUCKET, { limit: 64 }, null, await service.getInternalToken());
-    let objects = resp.body.items;
-    while (resp.body.next) {
-        const startAt = new URL(resp.body.next).searchParams.get('startAt');
-        resp = await new APS.ObjectsApi().getObjects(APS_BUCKET, { limit: 64, startAt }, null, await service.getInternalToken());
-        objects = objects.concat(resp.body.items);
+    const { access_token } = await service.getInternalToken();
+    let resp = await ossClient.getObjects(access_token, APS_BUCKET, 64);
+    let objects = resp.items;
+    while (resp.next) {
+        const startAt = new URL(resp.next).searchParams.get('startAt');
+        resp = await ossClient.getObjects(access_token, APS_BUCKET, 64, startAt);
+        objects = objects.concat(resp.items);
     }
     return objects;
 };
 
 service.uploadObject = async (objectName, filePath) => {
     await service.ensureBucketExists(APS_BUCKET);
-    const buffer = await fs.promises.readFile(filePath);
-    const results = await new APS.ObjectsApi().uploadResources(
-        APS_BUCKET,
-        [{ objectKey: objectName, data: buffer }],
-        { useAcceleration: false, minutesExpiration: 15 },
-        null,
-        await service.getInternalToken()
-    );
-    if (results[0].error) {
-        throw results[0].completed;
-    } else {
-        return results[0].completed;
-    }
+    const { access_token } = await service.getInternalToken();
+    const obj = await ossClient.Upload(APS_BUCKET, objectName, filePath, access_token);
+    return obj;
 };
 
 service.translateObject = async (urn, rootFilename) => {
-    const job = {
-        input: { urn },
-        output: { formats: [{ type: 'svf', views: ['2d', '3d'] }] }
-    };
-    if (rootFilename) {
-        job.input.compressedUrn = true;
-        job.input.rootFilename = rootFilename;
-    }
-    const resp = await new APS.DerivativesApi().translate(job, {}, null, await service.getInternalToken());
-    return resp.body;
+    const { access_token } = await service.getInternalToken();
+    const job = await modelDerivativeClient.startJobAsync(access_token, {
+        input: {
+            urn: urn,
+            compressedUrn: !!rootFilename,
+            rootFilename: rootFilename
+        },
+        output: {
+            formats: [{
+                views: [View._2d, View._3d],
+                type: Type.Svf
+            }]
+        }
+    });
+    return job.result;
 };
 
 service.getManifest = async (urn) => {
+    const { access_token } = await service.getInternalToken();
     try {
-        const resp = await new APS.DerivativesApi().getManifest(urn, {}, null, await service.getInternalToken());
-        return resp.body;
+        const manifest = await modelDerivativeClient.getManifestAsync(access_token, urn);
+        return manifest;
     } catch (err) {
-        if (err.response.status === 404) {
+        if (err.axiosError.response.status === 404) {
             return null;
         } else {
             throw err;

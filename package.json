@@ -10,10 +10,13 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "dotenv": "^16.3.1",
-    "express": "^4.17.1",
-    "express-formidable": "^1.2.0",
-    "forge-apis": "^0.9.1"
+    "@aps_sdk/authentication": "^0.0.1-beta.1",
+    "@aps_sdk/autodesk-sdkmanager": "^0.0.5-beta.1",
+    "@aps_sdk/model-derivative": "^0.0.7-beta.1",
+    "@aps_sdk/oss": "^0.0.2-beta.1",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "express-formidable": "^1.2.0"
   },
   "devDependencies": {
     "@types/forge-viewer": "^7.48.0"
