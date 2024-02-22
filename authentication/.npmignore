@@ -1,5 +1,0 @@
-node_modules
-.gitignore
-.npmignore
-tsconfig.json
-tsconfig.esm.json

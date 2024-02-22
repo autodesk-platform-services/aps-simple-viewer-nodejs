@@ -1,28 +1,14 @@
-const autodesk_sdkmanager = require("@aps_sdk/autodesk-sdkmanager");
+const { SdkManagerBuilder } = require('@aps_sdk/autodesk-sdkmanager');
+const { ModelDerivativeClient, View, Type } = require('@aps_sdk/model-derivative');
+const { AuthenticationClient, Scopes } = require('@aps_sdk/authentication');
+const { OssClient, CreateBucketsPayloadPolicyKeyEnum, CreateBucketXAdsRegionEnum } = require('@aps_sdk/oss');
 
-// all theses lines will be gone after publishing to npm
-const authentication = require('../authentication/source/dist/custom-code/AuthenticationClient.js');
-const oss = require('../oss/source/dist/custom-code/OssClient.js');
-const modelDerivative = require('../model-derivative/dist/custom-code/ModelDerivativeClient.js');
-const policyKey = require('../oss/source/dist/model/create-buckets-payload.js');
-const scopes = require('../authentication/source/dist/model/scopes.js');
-const views = require('../model-derivative/dist/model/view.js');
-const type = require('../model-derivative/dist/model/type.js');
+const { APS_CLIENT_ID, APS_CLIENT_SECRET, APS_BUCKET } = require('../config.js');
 
-const {
-  APS_CLIENT_ID,
-  APS_CLIENT_SECRET,
-  APS_BUCKET,
-} = require('../config.js');
-
-const sdkmanager = autodesk_sdkmanager.SdkManagerBuilder.Create().build();
-const authenticationClient = new authentication.AuthenticationClient(
-  sdkmanager
-);
-const ossClient = new oss.OssClient(sdkmanager);
-const modelDerivativeClient = new modelDerivative.ModelDerivativeClient(
-  sdkmanager
-);
+const sdkmanager = SdkManagerBuilder.Create().build();
+const authenticationClient = new AuthenticationClient(sdkmanager);
+const ossClient = new OssClient(sdkmanager);
+const modelDerivativeClient = new ModelDerivativeClient(sdkmanager);
 
 const service = (module.exports = {});
 
@@ -31,10 +17,10 @@ service.getInternalToken = async () => {
     APS_CLIENT_ID,
     APS_CLIENT_SECRET,
     new Array(
-      scopes.Scopes.Dataread,
-      scopes.Scopes.Datacreate,
-      scopes.Scopes.Bucketcreate,
-      scopes.Scopes.Bucketread
+      Scopes.Dataread,
+      Scopes.Datacreate,
+      Scopes.Bucketcreate,
+      Scopes.Bucketread
     )
   );
   return token;
@@ -44,7 +30,7 @@ service.getPublicToken = async () => {
   const token = await authenticationClient.getTwoLeggedTokenAsync(
     APS_CLIENT_ID,
     APS_CLIENT_SECRET,
-    new Array(scopes.Scopes.Viewablesread)
+    new Array(Scopes.Viewablesread)
   );
   return token;
 };
@@ -55,19 +41,15 @@ service.ensureBucketExists = async (bucketKey) => {
   try {
     await ossClient.getBucketDetails(access_token, bucketKey);
   } catch (err) {
-    if (
-      err.message ===
-      'getBucketDetails Request failed with status : 404 and error message: Bucket not found'
-    ) {
-
+    if (err.axiosError.response.status === 404) {
       const bucketPayload = {
         bucketKey: bucketKey,
-        policyKey: policyKey.CreateBucketsPayloadPolicyKeyEnum.Persistent,
-
+        policyKey: CreateBucketsPayloadPolicyKeyEnum.Persistent,
       };
 
       await ossClient.createBucket(
-        accessToken,
+        access_token,
+        CreateBucketXAdsRegionEnum.Emea,
         bucketPayload
       );
     } else {
@@ -78,42 +60,35 @@ service.ensureBucketExists = async (bucketKey) => {
 
 service.listObjects = async () => {
   await service.ensureBucketExists(APS_BUCKET);
-  const response = await service.getInternalToken();
-  const accessToken = response.access_token;
-  let resp = await ossClient.getObjects(accessToken, APS_BUCKET, 64);
-  let objects = resp.response.data.items;
+  const { access_token } = await service.getInternalToken();
+  let resp = await ossClient.getObjects(access_token, APS_BUCKET, 64);
+  let objects = resp.items;
 
-  while (resp.response.data.next) {
-    const startAt = new URL(resp.response.data.next).searchParams.get(
-      'startAt'
-    );
-    resp = await ossClient.getObjects(accessToken, APS_BUCKET, 64, startAt);
-    objects = objects.concat(resp.response.data.items);
+  while (resp.next) {
+    const startAt = new URL(resp.next).searchParams.get("startAt");
+    resp = await ossClient.getObjects(access_token, APS_BUCKET, 64, startAt);
+    objects = objects.concat(resp.items);
   }
   return objects;
 };
 
 service.uploadObject = async (objectName, filePath) => {
   await service.ensureBucketExists(APS_BUCKET);
-
-  const response = await service.getInternalToken();
-  const accessToken = response.access_token;
+  const { access_token } = await service.getInternalToken();
 
   const results = await ossClient.Upload(
     APS_BUCKET,
     objectName,
     filePath,
-    accessToken
+    access_token
   );
-
-  console.log(results.content);
-  return results.content;
+  return results;
 };
 
 service.translateObject = async (urn, rootFilename) => {
   const svfOutputFormat = {
-    views: [views.View._2d, views.View._3d],
-    type: type.Type.Svf,
+    views: [View._2d, View._3d],
+    type: Type.Svf,
   };
 
   const jobPayload = {
@@ -123,10 +98,9 @@ service.translateObject = async (urn, rootFilename) => {
     },
   };
 
-  const response = await service.getInternalToken();
-  const accessToken = response.access_token;
+  const { access_token } = await service.getInternalToken();
 
-  let job = await modelDerivativeClient.startJobAsync(accessToken, jobPayload);
+  let job = await modelDerivativeClient.startJobAsync(access_token, jobPayload);
   let result = job.result;
 
   return result;
@@ -134,20 +108,16 @@ service.translateObject = async (urn, rootFilename) => {
 
 service.getManifest = async (urn) => {
   try {
-    const response = await service.getInternalToken();
-    const accessToken = response.access_token;
+    const { access_token } = await service.getInternalToken();
 
     const resp = await modelDerivativeClient.getManifestAsync(
-      accessToken,
+      access_token,
       urn
     );
     return resp;
   } catch (err) {
     console.log(err.message);
-    if (
-      err.message ===
-      'getManifest Request failed with status : 404 and error mssage: undefined'
-    ) {
+    if (err.axiosError.response.status === 404) {
       return null;
     } else {
       throw err;
@@ -155,4 +125,4 @@ service.getManifest = async (urn) => {
   }
 };
 
-service.urnify = (id) => Buffer.from(id).toString('base64').replace(/=/g, '');
+service.urnify = (id) => Buffer.from(id).toString("base64").replace(/=/g, "");
