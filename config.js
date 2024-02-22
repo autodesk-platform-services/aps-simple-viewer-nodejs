@@ -6,6 +6,7 @@ if (!APS_CLIENT_ID || !APS_CLIENT_SECRET) {
     process.exit(1);
 }
 APS_BUCKET = APS_BUCKET || `${APS_CLIENT_ID.toLowerCase()}-basic-app`;
+
 PORT = PORT || 8080;
 
 module.exports = {

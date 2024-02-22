@@ -1,55 +1,59 @@
-body, html {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    font-family: ArtifaktElement;
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  font-family: ArtifaktElement;
 }
 
-#header, #preview, #overlay {
-    position: absolute;
-    width: 100%;
+#header,
+#preview,
+#overlay {
+  position: absolute;
+  width: 100%;
 }
 
 #header {
-    height: 3em;
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: center;
+  height: 3em;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
 }
 
-#preview, #overlay {
-    top: 3em;
-    bottom: 0;
+#preview,
+#overlay {
+  top: 3em;
+  bottom: 0;
 }
 
 #overlay {
-    z-index: 1;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 1em;
-    display: none;
+  z-index: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 1em;
+  display: none;
 }
 
 #overlay > .notification {
-    margin: auto;
-    padding: 1em;
-    max-width: 50%;
-    background: white;
+  margin: auto;
+  padding: 1em;
+  max-width: 50%;
+  background: white;
 }
 
 #header > * {
-    height: 2em;
-    margin: 0 0.5em;
-    font-size: 1em;
-    font-family: ArtifaktElement;
+  height: 2em;
+  margin: 0 0.5em;
+  font-size: 1em;
+  font-family: ArtifaktElement;
 }
 
 #header .title {
-    flex: 1 0 auto;
-    height: auto;
+  flex: 1 0 auto;
+  height: auto;
 }
 
 #models {
-    flex: 0 1 auto;
-    min-width: 2em;
+  flex: 0 1 auto;
+  min-width: 2em;
 }
