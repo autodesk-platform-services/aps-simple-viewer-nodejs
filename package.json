@@ -10,6 +10,10 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@aps_sdk/authentication": "file:aps_sdk-authentication-0.0.1-beta.1.tgz",
+    "@aps_sdk/autodesk-sdkmanager": "^0.0.7-beta.1",
+    "@aps_sdk/model-derivative": "file:aps_sdk-model-derivative-0.0.8-beta.1.tgz",
+    "@aps_sdk/oss": "file:aps_sdk-oss-0.0.3-beta.1.tgz",
     "dotenv": "^16.3.1",
     "express": "^4.17.1",
     "express-formidable": "^1.2.0",
