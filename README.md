@@ -51,6 +51,26 @@ APS_CALLBACK_URL=http://localhost:8080/api/auth/callback
 > When using [Visual Studio Code](https://code.visualstudio.com), you can run & debug
 > the application by pressing `F5`.
 
+## Obtaining the release parameters
+
+There is an easy way to obtain a valid query string using the [Informed Design Web Application](https://informeddesign.autodesk.com/), following these three steps. 
+
+We are considering that you have this sample app running on your `localhost` and listening on the default port `8080`. You will need `Account Admin` or `Project Admin` permissions to perform this procedure.
+
+**Step 1:**  On the Informed Design WebApp, Open the desired Product Release and click on the `View in 3D Button`.
+
+![step-01](static/images/step-01.png)
+
+**Step 2:** The selected Product Release will open in a new tab.
+
+![step-02](static/images/step-02.png)
+
+**Step 3:** Edit the address bar. Relace the hostname `http://viewer.informeddesign.autodesk.com/` with `http://localhost:8080`. Remember that your local instance is not using an SSL protocol, so don't forget to change the `https://` prefix to ` http://` prefix.
+
+![step-03](static/images/step-03.png)
+
+That's it! As long as you are able to visualize the Product Release in the WebApp, you should also be able to visualize the same Product Release with this sample applications, using exactly the same query string.
+
 ## Troubleshooting
 
 Please contact us via https://forge.autodesk.com/en/support/get-help.
