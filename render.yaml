@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: aps-simple-viewer-nodejs
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeployTrigger: off
+    envVars:
+      - key: APS_CLIENT_ID
+        sync: false
+      - key: APS_CLIENT_SECRET
+        sync: false
