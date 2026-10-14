@@ -4,6 +4,11 @@ const { listObjects, uploadObject, translateObject, getManifest, urnify } = requ
 
 let router = express.Router();
 
+function isSafeFilename(name, allowSlash = false) {
+    const forbidden = allowSlash ? /[<>"`\\\x00-\x1f\x7f]/ : /[<>"`\\/\x00-\x1f\x7f]/;
+    return typeof name === 'string' && name.length > 0 && name.length <= 255 && !forbidden.test(name);
+}
+
 router.get('/api/models', async function (req, res, next) {
     try {
         const objects = await listObjects();
@@ -44,6 +49,10 @@ router.post('/api/models', formidable({ maxFileSize: Infinity }), async function
     const file = req.files['model-file'];
     if (!file) {
         res.status(400).send('The required field ("model-file") is missing.');
+        return;
+    }
+    if (!isSafeFilename(file.name)) {
+        res.status(400).send('The filename contains invalid characters.');
         return;
     }
     try {

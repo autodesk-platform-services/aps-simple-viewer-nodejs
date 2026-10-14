@@ -8,14 +8,14 @@ initViewer(document.getElementById('preview')).then(viewer => {
 
 async function setupModelSelection(viewer, selectedUrn) {
     const dropdown = document.getElementById('models');
-    dropdown.innerHTML = '';
+    dropdown.replaceChildren();
     try {
         const resp = await fetch('/api/models');
         if (!resp.ok) {
             throw new Error(await resp.text());
         }
         const models = await resp.json();
-        dropdown.innerHTML = models.map(model => `<option value=${model.urn} ${model.urn === selectedUrn ? 'selected' : ''}>${model.name}</option>`).join('\n');
+        dropdown.replaceChildren(...models.map(model => new Option(model.name, model.urn, false, model.urn === selectedUrn)));
         dropdown.onchange = () => onModelSelected(viewer, dropdown.value);
         if (dropdown.value) {
             onModelSelected(viewer, dropdown.value);
@@ -41,7 +41,9 @@ async function setupModelUpload(viewer) {
         }
         upload.setAttribute('disabled', 'true');
         models.setAttribute('disabled', 'true');
-        showNotification(`Uploading model <em>${file.name}</em>. Do not reload the page.`);
+        const filename = document.createElement('em');
+        filename.textContent = file.name;
+        showNotification('Uploading model ', filename, '. Do not reload the page.');
         try {
             const resp = await fetch('/api/models', { method: 'POST', body: data });
             if (!resp.ok) {
@@ -81,9 +83,16 @@ async function onModelSelected(viewer, urn) {
                 showNotification(`Model is being translated (${status.progress})...`);
                 window.onModelSelectedTimeout = setTimeout(onModelSelected, 5000, viewer, urn);
                 break;
-            case 'failed':
-                showNotification(`Translation failed. <ul>${status.messages.map(msg => `<li>${JSON.stringify(msg)}</li>`).join('')}</ul>`);
+            case 'failed': {
+                const list = document.createElement('ul');
+                for (const msg of status.messages) {
+                    const item = document.createElement('li');
+                    item.textContent = JSON.stringify(msg);
+                    list.append(item);
+                }
+                showNotification('Translation failed. ', list);
                 break;
+            }
             default:
                 clearNotification();
                 loadModel(viewer, urn);
@@ -95,14 +104,17 @@ async function onModelSelected(viewer, urn) {
     }
 }
 
-function showNotification(message) {
+function showNotification(...content) {
     const overlay = document.getElementById('overlay');
-    overlay.innerHTML = `<div class="notification">${message}</div>`;
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.append(...content);
+    overlay.replaceChildren(notification);
     overlay.style.display = 'flex';
 }
 
 function clearNotification() {
     const overlay = document.getElementById('overlay');
-    overlay.innerHTML = '';
+    overlay.replaceChildren();
     overlay.style.display = 'none';
 }
